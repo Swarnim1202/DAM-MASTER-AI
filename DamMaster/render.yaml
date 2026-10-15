@@ -6,8 +6,8 @@ services:
   - type: web
     name: dammaster-api
     runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerfilePath: ./DamMaster/Dockerfile
+    dockerContext: ./DamMaster
     plan: free                    # upgrade to "starter" ($7/mo) for always-on
     healthCheckPath: /api/auth/me
     envVars:
