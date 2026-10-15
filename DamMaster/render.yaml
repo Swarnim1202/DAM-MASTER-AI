@@ -1,0 +1,57 @@
+# Render Blueprint — deploys DAM MASTER AI (ASP.NET Core + React) + MySQL
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ── Web Service (backend + frontend combined) ────────────────────────────────
+  - type: web
+    name: dammaster-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free                    # upgrade to "starter" ($7/mo) for always-on
+    healthCheckPath: /api/auth/me
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:10000
+      - key: Storage__Root
+        value: /tmp/dammaster-files    # ephemeral on free tier; use a Disk for persistence
+      - key: Notifications__AppBaseUrl
+        fromService:
+          type: web
+          name: dammaster-api
+          property: host
+      # Connection string is built from the MySQL service below
+      - key: ConnectionStrings__DamMaster
+        value: >-
+          Server=${MYSQLHOST};Port=${MYSQLPORT};Database=${MYSQLDATABASE};
+          User ID=${MYSQLUSER};Password=${MYSQLPASSWORD};
+          SslMode=Preferred;AllowUserVariables=true;GuidFormat=None
+      - key: MYSQLHOST
+        fromDatabase:
+          name: dammaster-db
+          property: host
+      - key: MYSQLPORT
+        fromDatabase:
+          name: dammaster-db
+          property: port
+      - key: MYSQLDATABASE
+        fromDatabase:
+          name: dammaster-db
+          property: database
+      - key: MYSQLUSER
+        fromDatabase:
+          name: dammaster-db
+          property: user
+      - key: MYSQLPASSWORD
+        fromDatabase:
+          name: dammaster-db
+          property: password
+
+  # ── MySQL 8 Database ──────────────────────────────────────────────────────────
+databases:
+  - name: dammaster-db
+    databaseName: dammaster
+    user: dammaster
+    plan: free                    # 1 GB free; upgrade for production

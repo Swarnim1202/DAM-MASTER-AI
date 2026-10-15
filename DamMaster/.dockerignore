@@ -1,0 +1,29 @@
+# Build tool caches and output
+**/node_modules/
+**/bin/
+**/obj/
+frontend/dist/
+
+# Don't send existing wwwroot — Docker will build it fresh from source
+backend/DamMaster.Api/wwwroot/
+backend/DamMaster.Api/publish/
+
+# Secrets — never commit these
+**/appsettings.Development.json
+**/appsettings.Production.json
+
+# Test artefacts
+tests/__pycache__/
+tests/*.pyc
+
+# OS / IDE
+.git/
+.gitignore
+*.user
+.vs/
+.vscode/
+.idea/
+*.suo
+*.swp
+Thumbs.db
+.DS_Store
