@@ -1,37 +1,31 @@
 #!/bin/bash
-# Entrypoint: wait for MySQL to be ready, run migrations, then start the API.
+# Entrypoint: build the connection string from individual Render env vars,
+# wait for MySQL to be ready, run migrations, then start the API.
 set -e
 
-# ── Parse DB host/port from the connection string env var ─────────────────────
-# Render sets ConnectionStrings__DamMaster via environment variable
-CS="${ConnectionStrings__DamMaster:-}"
-if [ -z "$CS" ]; then
-  echo "ERROR: ConnectionStrings__DamMaster is not set" >&2
-  exit 1
-fi
+# ── Validate individual DB env vars injected by Render fromDatabase ───────────
+: "${MYSQLHOST:?ERROR: MYSQLHOST env var is not set}"
+: "${MYSQLDATABASE:?ERROR: MYSQLDATABASE env var is not set}"
+: "${MYSQLUSER:?ERROR: MYSQLUSER env var is not set}"
+: "${MYSQLPASSWORD:?ERROR: MYSQLPASSWORD env var is not set}"
+MYSQLPORT="${MYSQLPORT:-3306}"
 
-# Extract host, port, user, password, database from the connection string
-DB_HOST=$(echo "$CS" | grep -oP '(?<=Server=)[^;]+')
-DB_PORT=$(echo "$CS" | grep -oP '(?<=Port=)[^;]+')
-DB_USER=$(echo "$CS" | grep -oP '(?<=User ID=)[^;]+')
-DB_PASS=$(echo "$CS" | grep -oP '(?<=Password=)[^;]+')
-DB_NAME=$(echo "$CS" | grep -oP '(?<=Database=)[^;]+')
+# ── Build the ASP.NET Core connection string and export it ────────────────────
+export ConnectionStrings__DamMaster="Server=${MYSQLHOST};Port=${MYSQLPORT};Database=${MYSQLDATABASE};User ID=${MYSQLUSER};Password=${MYSQLPASSWORD};SslMode=Preferred;AllowUserVariables=true;GuidFormat=None"
 
-DB_PORT="${DB_PORT:-3306}"
-
-echo "Waiting for MySQL at $DB_HOST:$DB_PORT ..."
+echo "Waiting for MySQL at ${MYSQLHOST}:${MYSQLPORT} ..."
 for i in $(seq 1 30); do
-  if mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --password="$DB_PASS" --silent 2>/dev/null; then
+  if mysqladmin ping -h "${MYSQLHOST}" -P "${MYSQLPORT}" -u "${MYSQLUSER}" --password="${MYSQLPASSWORD}" --silent 2>/dev/null; then
     echo "MySQL is up."
     break
   fi
-  echo "  attempt $i/30 — retrying in 3s..."
+  echo "  attempt ${i}/30 — retrying in 3s..."
   sleep 3
 done
 
 # ── Run migrations (idempotent SQL scripts) ───────────────────────────────────
 echo "Running database migrations..."
-MYSQL_CMD="mysql -h $DB_HOST -P $DB_PORT -u $DB_USER --password=$DB_PASS $DB_NAME"
+MYSQL_CMD="mysql -h ${MYSQLHOST} -P ${MYSQLPORT} -u ${MYSQLUSER} --password=${MYSQLPASSWORD} ${MYSQLDATABASE}"
 
 $MYSQL_CMD < database/001_schema.sql
 $MYSQL_CMD < database/002_seed_reference.sql

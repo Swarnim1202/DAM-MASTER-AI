@@ -17,17 +17,7 @@ services:
         value: http://+:10000
       - key: Storage__Root
         value: /tmp/dammaster-files    # ephemeral on free tier; use a Disk for persistence
-      - key: Notifications__AppBaseUrl
-        fromService:
-          type: web
-          name: dammaster-api
-          property: host
-      # Connection string is built from the MySQL service below
-      - key: ConnectionStrings__DamMaster
-        value: >-
-          Server=${MYSQLHOST};Port=${MYSQLPORT};Database=${MYSQLDATABASE};
-          User ID=${MYSQLUSER};Password=${MYSQLPASSWORD};
-          SslMode=Preferred;AllowUserVariables=true;GuidFormat=None
+      # Individual MySQL vars — entrypoint.sh assembles the connection string at startup
       - key: MYSQLHOST
         fromDatabase:
           name: dammaster-db
