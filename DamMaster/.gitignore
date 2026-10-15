@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+frontend/node_modules/
+backend/DamMaster.Api/wwwroot/
+backend/DamMaster.Api/appsettings.Development.json
+*.user
+.vs/

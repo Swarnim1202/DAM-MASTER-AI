@@ -1,0 +1,2 @@
+{ "name": "DAM MASTER AI — Field", "short_name": "DAM Field", "start_url": "/field", "display": "standalone", "background_color": "#0a1d2e", "theme_color": "#0a1d2e",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }] }

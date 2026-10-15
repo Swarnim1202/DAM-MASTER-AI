@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "DamMaster": "Server=localhost;Port=3306;Database=dammaster;User ID=dammaster;Password=YOUR_DEV_PASSWORD;SslMode=Preferred;AllowUserVariables=true;GuidFormat=None"
+  }
+}
